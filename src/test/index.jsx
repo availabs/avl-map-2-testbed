@@ -58,7 +58,7 @@ const Test = () => {
           range: getColorRange(7, "BrBG"),
           isActive: true,
           name: "Test Legend",
-          format: ",d"
+          format: ",.1f"
         } }/>
     </div>
   )
