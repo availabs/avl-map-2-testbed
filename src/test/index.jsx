@@ -1,8 +1,10 @@
 import React from "react"
 
-import get from "lodash.get"
+import get from "lodash/get"
 
 import config from "./config.json"
+
+import { Protocol, PMTiles } from './pmtiles/index.ts';
 
 import {
   AvlMap,
@@ -14,6 +16,19 @@ import {
 } from "~/avl-map-2/src"
 
 import { useFakelor } from "~/Fakelor"
+
+const PMTilesProtocol = {
+  type: "pmtiles",
+  protocolInit: maplibre => {
+    const protocol = new Protocol();
+    maplibre.addProtocol("pmtiles", protocol.tile);
+    return protocol;
+  },
+  sourceInit: (protocol, source, maplibreMap) => {
+    const p = new PMTiles(source.url);
+    protocol.add(p);
+  }
+}
 
 const Test = () => {
   const Layers = React.useMemo(() => [new TestLayer(), new CountyLayer()], []);
@@ -39,8 +54,10 @@ const Test = () => {
         layers={ Layers }
         layerProps={ layerProps }
         mapOptions={ {
-          navigationControl: false
+          navigationControl: false,
+          protocols: [PMTilesProtocol]
         } }
+        mapActions={ ["go-home", "reset-view", "navigation-controls"] }
         leftSidebar={ {
           startOpen: true,
           Panels: [
@@ -522,7 +539,7 @@ class TestLayer extends AvlLayer {
     }
   }
   onHover = {
-    layers: ["npmrds"],
+    layers: ["npmrds", "pmtiles-test"],
     isPinnable: true,
     callback: function(layerId, features, lngLat, point) {
       return [layerId, features.map(f => f.properties), lngLat];
@@ -620,6 +637,13 @@ class TestLayer extends AvlLayer {
         type: "vector",
         url: "https://tiles.availabs.org/data/npmrds.json"
       }
+    },
+    { id: "pmtiles-test",
+      protocol: "pmtiles",
+      source: {
+        type: "vector",
+        url: "pmtiles:///pan_s609_v1228_1693238224553.pmtiles"
+      }
     }
   ]
   layers = [
@@ -638,6 +662,15 @@ class TestLayer extends AvlLayer {
         ],
         "line-width": 4
       }
+    },
+    { "id": "pmtiles-test",
+      "type": "circle",
+      "paint": {
+        "circle-color": "blue",
+        "circle-radius": 6
+      },
+      "source": "pmtiles-test",
+      "source-layer": "s609_v1228"
     }
   ]
 }
@@ -685,7 +718,7 @@ const MyCountyOpacityFilter = ({ onChange, value, maplibreMap, resourcesLoaded, 
   return (
     <div
       className={ `
-        px-2 pt-1 pb-0 ${ theme.bgHighlight } rounded w-full cursor-pointer
+        px-2 pt-1 pb-0 ${ theme.bgInput } rounded w-full cursor-pointer
         ${ hasFocus ?
             "outline-1 outline outline-current" :
             "hover:outline-1 hover:outline hover:outline-gray-300"
