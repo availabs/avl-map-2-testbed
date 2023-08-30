@@ -542,6 +542,7 @@ class TestLayer extends AvlLayer {
     layers: ["npmrds", "pmtiles-test"],
     isPinnable: true,
     callback: function(layerId, features, lngLat, point) {
+console.log("HOVER:", layerId)
       return [layerId, features.map(f => f.properties), lngLat];
     }
   }
