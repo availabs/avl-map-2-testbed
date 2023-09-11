@@ -816,6 +816,7 @@ class CountyLayer extends AvlLayer {
   RenderComponent = MyCountyRenderComponent;
   onHover = {
     layers: ["counties"],
+    isPinnable: true,
     Component: MyCountyHoverComp,
     callback: function(layerId, features) {
       return features.map(f => get(f, ["properties", "geoid"], "unknown"))
